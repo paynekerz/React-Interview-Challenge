@@ -11,15 +11,15 @@ We would like you to add the following functionality to withdrawals and deposits
 
 #### Making Withdrawals
 When making a withdrawal, the following rules should apply.
-- A customer can withdraw no more than $200 in a single transaction.
-- A customer can withdraw no more than $400 in a single day. 
-- A customer can withdraw any amount that can be dispensed in $5 bills.
-- The customer cannot withdraw more than they have in their account, unless it is a credit account, in which case they cannot withdraw more than their credit limit.
+- [ ] A customer can withdraw no more than $200 in a single transaction.
+- [ ] A customer can withdraw no more than $400 in a single day. 
+- [X] A customer can withdraw any amount that can be dispensed in $5 bills.
+- [X] The customer cannot withdraw more than they have in their account, unless it is a credit account, in which case they cannot withdraw more than their credit limit.
 
 #### Making Deposits
 When making a deposit, the following rules should apply.
-- A customer cannot deposit more than $1000 in a single transaction.
-- If this is a credit account, the customer cannot deposit more in their account than is needed to 0 out the account.
+- [ ] A customer cannot deposit more than $1000 in a single transaction.
+- [ ] If this is a credit account, the customer cannot deposit more in their account than is needed to 0 out the account.
 
 ### Wrapping Up
 Once you have completed the project, we ask that you take some time to answer the questions in the included `wrap-up.md` file.

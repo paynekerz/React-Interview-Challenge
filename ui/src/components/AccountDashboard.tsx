@@ -63,7 +63,13 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
     const requestOptions = {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: withdrawAmount }),
+      body: JSON.stringify({
+        accountNumber: account.accountNumber,
+        amount: withdrawAmount,
+        accountAmount: account.amount || 0,
+        creditLimit: account.creditLimit || 0,
+        type: account.type,
+      }),
     };
 
     try {
@@ -91,7 +97,7 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
       });
       setError(null);
     } catch {
-      setError("An unexpected error occurred during deposit.");
+      setError("An unexpected error occurred during withdrawal.");
     }
   };
 
