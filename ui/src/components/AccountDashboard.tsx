@@ -88,12 +88,14 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
 
       const data = await response.json();
 
+      console.log(data.sessionTotal);
+      console.log(data.remainingLimit);
       setAccount({
-        accountNumber: data.account_number,
-        name: data.name,
-        amount: data.amount,
-        type: data.type,
-        creditLimit: data.credit_limit,
+        accountNumber: data.updatedAccount.account_number,
+        name: data.updatedAccount.name,
+        amount: data.updatedAccount.amount,
+        type: data.updatedAccount.type,
+        creditLimit: data.updatedAccount.credit_limit,
       });
       setError(null);
     } catch {

@@ -29,9 +29,11 @@ router.put(
   "/:accountID/withdraw",
   async (request: Request, response: Response) => {
     const { error } = withdrawSchema.validate(request.body);
-    const { accountID, amount, accountAmount, creditLimit, type } = request.body;
-    const currentSessionTotal = sessionWithdrawals[accountID];
+    const { accountID, amount, accountAmount, creditLimit, type } =
+      request.body;
+    const currentSessionTotal = sessionWithdrawals[accountID] || 0; 
     const potentialTotal = currentSessionTotal + amount;
+    sessionWithdrawals[accountID] = currentSessionTotal + amount; 
 
     if (error) {
       return response.status(400).send(error.details[0].message);
@@ -42,23 +44,23 @@ router.put(
         condition: amount % 5 !== 0,
         message: "You can only withdraw amounts in multiples of $5.",
       },
-    // {
-    //   condition: amount > MAX_TRANSACTION_LIMIT,
-    //   message:
-    //     "You cannot withdraw more than $200 in a single transaction.",
-    // },
-    {
-      condition:
-        (type === "credit" &&
-          amount > accountAmount + (creditLimit || 0)) ||
-        (type !== "credit" && amount > accountAmount),
-      message:
-        "Insufficient funds. You cannot withdraw more than your balance or credit limit.",
-    },
-    // {
-    //   condition: dailyWithdrawal + amount > MAX_DAILY_LIMIT,
-    //   message: "You cannot withdraw more than $400 in a 24-hour period.",
-    // },
+      {
+        condition:
+          amount > WITHDRAWAL_TRANSACTION_LIMIT ||
+          potentialTotal > WITHDRAWAL_TRANSACTION_LIMIT,
+        message: "You cannot withdraw more than $200 in a single transaction.",
+      },
+      {
+        condition:
+          (type === "credit" && amount > accountAmount + (creditLimit || 0)) ||
+          (type !== "credit" && amount > accountAmount),
+        message:
+          "Insufficient funds. You cannot withdraw more than your balance or credit limit.",
+      },
+      // {
+      //   condition: dailyWithdrawal + amount > MAX_DAILY_LIMIT,
+      //   message: "You cannot withdraw more than $400 in a 24-hour period.",
+      // },
     ];
 
     for (const validation of validations) {
@@ -72,7 +74,12 @@ router.put(
         request.params.accountID,
         request.body.amount
       );
-      return response.status(200).send(updatedAccount);
+      return response.status(200).send({
+        sessionTotal: sessionWithdrawals[accountID],
+        remainingLimit:
+          WITHDRAWAL_TRANSACTION_LIMIT - sessionWithdrawals[accountID],
+        updatedAccount,
+      });
     } catch (err) {
       if (err instanceof Error) {
         return response.status(400).send({ error: err.message });
