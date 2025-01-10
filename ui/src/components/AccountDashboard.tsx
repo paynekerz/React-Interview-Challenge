@@ -88,8 +88,6 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
 
       const data = await response.json();
 
-      console.log(data.sessionTotal);
-      console.log(data.remainingLimit);
       setAccount({
         accountNumber: data.updatedAccount.account_number,
         name: data.updatedAccount.name,
@@ -105,14 +103,14 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
 
   const handleSignOut = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:3000/transactions/${account.accountNumber}/signout`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ accountID: account.accountNumber }),
-        }
-      );
+       const response = await fetch(
+         `http://localhost:3000/transactions/${account.accountNumber}/signout`,
+         {
+           method: "POST",
+           headers: { "Content-Type": "application/json" },
+           body: JSON.stringify({ accountID: account.accountNumber }),
+         }
+       );
 
       if (!response.ok) {
         setError("An error occurred while signing out.");

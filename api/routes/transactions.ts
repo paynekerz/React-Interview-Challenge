@@ -24,6 +24,7 @@ const withdrawSchema: Schema = Joi.object({
 
 const WITHDRAWAL_TRANSACTION_LIMIT = 200;
 let sessionWithdrawals: Record<string, number> = {};
+let sessionDeposits: Record<string, number> = {};
 
 router.put(
   "/:accountID/withdraw",
@@ -33,19 +34,18 @@ router.put(
     if (error) {
       return response.status(400).send(error.details[0].message);
     }
-    const { accountID, amount, accountAmount, creditLimit, type } =
-      request.body;
-    const currentSessionTotal = sessionWithdrawals[accountID] || 0; 
-    
+    const accountID = String(request.body.accountID);
+    const { amount, accountAmount, creditLimit, type } = request.body;
+    const currentSessionTotal = sessionWithdrawals[accountID] || 0;
+
     //Checking to see if it can be withdrawn in 5s before setting session amounts
     if (amount % 5 !== 0) {
       return response.status(400).send({
         error: "You can only withdraw amounts in multiples of $5.",
       });
     }
-    
-    const potentialTotal = currentSessionTotal + amount;
 
+    const potentialTotal = currentSessionTotal + amount;
 
     const validations = [
       {
@@ -73,7 +73,7 @@ router.put(
       }
     }
 
-    sessionWithdrawals[accountID] = potentialTotal; 
+    sessionWithdrawals[accountID] = potentialTotal;
 
     try {
       const updatedAccount = await withdrawal(
@@ -81,7 +81,6 @@ router.put(
         request.body.amount
       );
       return response.status(200).send({
-        sessionTotal: sessionWithdrawals[accountID],
         remainingLimit:
           WITHDRAWAL_TRANSACTION_LIMIT - sessionWithdrawals[accountID],
         updatedAccount,
@@ -118,14 +117,21 @@ router.put(
 );
 
 router.post("/:accountID/signout", (request: Request, response: Response) => {
-  const accountID = request.body.accountID;
-  if (accountID && sessionWithdrawals[accountID]) {
-    delete sessionWithdrawals[accountID];
+  const accountID = String(request.body.accountID);
+
+  if (!accountID) {
+    return response
+      .status(400)
+      .send({ error: "Missing accountID in request body." });
   }
+
+  //Overly Simple solution to wipe session activity
+  sessionWithdrawals = {};
+  sessionDeposits = {};
+
   return response
     .status(200)
     .send({ message: "Signed out and session reset." });
 });
-
 
 export default router;
