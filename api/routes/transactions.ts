@@ -117,27 +117,15 @@ router.put(
   }
 );
 
-// router.put(
-//   "/:accountID/signout",
-//   async (request: Request, response: Response) => {
-//     const { error } = transactionSchema.validate(request.body);
+router.post("/:accountID/signout", (request: Request, response: Response) => {
+  const accountID = request.body.accountID;
+  if (accountID && sessionWithdrawals[accountID]) {
+    delete sessionWithdrawals[accountID];
+  }
+  return response
+    .status(200)
+    .send({ message: "Signed out and session reset." });
+});
 
-//     if (error) {
-//       return response.status(400).send(error.details[0].message);
-//     }
-
-//     try {
-//       const updatedAccount = await deposit(
-//         request.params.accountID,
-//         request.body.amount
-//       );
-//       return response.status(200).send(updatedAccount);
-//     } catch (err) {
-//       if (err instanceof Error) {
-//         return response.status(400).send({ error: err.message });
-//       }
-//     }
-//   }
-// );
 
 export default router;

@@ -103,11 +103,34 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/transactions/${account.accountNumber}/signout`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accountID: account.accountNumber }),
+        }
+      );
+
+      if (!response.ok) {
+        setError("An error occurred while signing out.");
+        return;
+      }
+
+      await signOut();
+      setError(null);
+    } catch {
+      setError("An unexpected error occurred while signing out.");
+    }
+  };
+
   return (
     <Paper className="account-dashboard">
       <div className="dashboard-header">
         <h1>Hello, {account.name}!</h1>
-        <Button variant="contained" onClick={signOut}>
+        <Button variant="contained" onClick={handleSignOut}>
           Sign Out
         </Button>
       </div>
