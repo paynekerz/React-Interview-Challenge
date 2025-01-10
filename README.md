@@ -18,8 +18,8 @@ When making a withdrawal, the following rules should apply.
 
 #### Making Deposits
 When making a deposit, the following rules should apply.
-- [ ] A customer cannot deposit more than $1000 in a single transaction.
-- [ ] If this is a credit account, the customer cannot deposit more in their account than is needed to 0 out the account.
+- [X] A customer cannot deposit more than $1000 in a single transaction.
+- [X] If this is a credit account, the customer cannot deposit more in their account than is needed to 0 out the account.
 
 ### Wrapping Up
 Once you have completed the project, we ask that you take some time to answer the questions in the included `wrap-up.md` file.

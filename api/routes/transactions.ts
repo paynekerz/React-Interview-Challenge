@@ -16,13 +16,14 @@ const withdrawSchema: Schema = Joi.object({
   type: Joi.string().valid("checking", "savings", "credit").required(),
 });
 
-// const depositSchema: Schema = Joi.object({
-//   amount: Joi.number().required(),
-//   accountAmount: Joi.number().required(),
-//   type: Joi.string().valid("checking", "savings", "credit").required(),
-// });
+const depositSchema: Schema = Joi.object({
+  amount: Joi.number().required(),
+  accountAmount: Joi.number().required(),
+  type: Joi.string().valid("checking", "savings", "credit").required(),
+});
 
 const WITHDRAWAL_TRANSACTION_LIMIT = 200;
+const DEPOSIT_SESSION_LIMIT = 1000;
 let sessionWithdrawals: Record<string, number> = {};
 let sessionDeposits: Record<string, number> = {};
 
@@ -34,7 +35,7 @@ router.put(
     if (error) {
       return response.status(400).send(error.details[0].message);
     }
-    const accountID = String(request.body.accountID);
+    const accountID = String(request.params);
     const { amount, accountAmount, creditLimit, type } = request.body;
     const currentSessionTotal = sessionWithdrawals[accountID] || 0;
 
@@ -61,6 +62,7 @@ router.put(
         message:
           "Insufficient funds. You cannot withdraw more than your balance or credit limit.",
       },
+      // See wrap up for details
       // {
       //   condition: dailyWithdrawal + amount > MAX_DAILY_LIMIT,
       //   message: "You cannot withdraw more than $400 in a 24-hour period.",
@@ -96,15 +98,48 @@ router.put(
 router.put(
   "/:accountID/deposit",
   async (request: Request, response: Response) => {
-    const { error } = transactionSchema.validate(request.body);
+    const { error } = depositSchema.validate(request.body);
 
     if (error) {
       return response.status(400).send(error.details[0].message);
     }
 
     try {
+      const { accountID } = request.params;
+      const { amount, accountAmount, type } = request.body;
+      const currentSessionTotal = sessionDeposits[accountID] || 0;
+      const potentialTotal = currentSessionTotal + amount;
+
+      const MAX_DEPOSIT_LIMIT = 1000;
+
+      const validations = [
+        {
+          condition: amount > MAX_DEPOSIT_LIMIT,
+          message:
+            "You cannot deposit more than $1000 in a single transaction.",
+        },
+        {
+          condition: potentialTotal > DEPOSIT_SESSION_LIMIT,
+          message:
+            "You cannot deposit more than $1000 in a single session. Please try again later.",
+        },
+        {
+          condition: type === "credit" && amount > Math.max(0, -accountAmount),
+          message:
+            "You cannot deposit more than what is needed to zero out the account.",
+        },
+      ];
+
+      for (const validation of validations) {
+        if (validation.condition) {
+          return response.status(400).send({ error: validation.message });
+        }
+      }
+
+      sessionDeposits[accountID] = potentialTotal;
+
       const updatedAccount = await deposit(
-        request.params.accountID,
+        accountID,
         request.body.amount
       );
       return response.status(200).send(updatedAccount);
@@ -117,6 +152,8 @@ router.put(
 );
 
 router.post("/:accountID/signout", (request: Request, response: Response) => {
+  // What remains of checking indiviual user sessions in a better build I would tie sessionWithdrawals and sessionDeposits
+  // to their users specifically and wipe that instead of the whole thing
   const accountID = String(request.body.accountID);
 
   if (!accountID) {

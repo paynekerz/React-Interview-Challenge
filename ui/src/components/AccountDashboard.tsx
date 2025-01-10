@@ -27,7 +27,11 @@ export const AccountDashboard = (props: AccountDashboardProps) => {
     const requestOptions = {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: depositAmount }),
+      body: JSON.stringify({
+        amount: depositAmount,
+        accountAmount: account.amount,
+        type: account.type,
+      }),
     };
 
     try {
