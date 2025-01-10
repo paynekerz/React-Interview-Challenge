@@ -65,4 +65,5 @@ making the development and deployment processes more efficient. And finally, I w
 
 ### If you have any other comments or info you'd like the reviewers to know, please add them below.
 
+I created a new Dockerfile in the root folder so you should be able to run `docker run build` and `docker compose up -d` in the console of the root folder.
 The project was a great opportunity to explore and fix integration issues between the frontend, backend, and database layers. Thank you for letting my participate!
