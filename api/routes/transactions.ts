@@ -29,21 +29,25 @@ router.put(
   "/:accountID/withdraw",
   async (request: Request, response: Response) => {
     const { error } = withdrawSchema.validate(request.body);
-    const { accountID, amount, accountAmount, creditLimit, type } =
-      request.body;
-    const currentSessionTotal = sessionWithdrawals[accountID] || 0; 
-    const potentialTotal = currentSessionTotal + amount;
-    sessionWithdrawals[accountID] = currentSessionTotal + amount; 
 
     if (error) {
       return response.status(400).send(error.details[0].message);
     }
+    const { accountID, amount, accountAmount, creditLimit, type } =
+      request.body;
+    const currentSessionTotal = sessionWithdrawals[accountID] || 0; 
+    
+    //Checking to see if it can be withdrawn in 5s before setting session amounts
+    if (amount % 5 !== 0) {
+      return response.status(400).send({
+        error: "You can only withdraw amounts in multiples of $5.",
+      });
+    }
+    
+    const potentialTotal = currentSessionTotal + amount;
+
 
     const validations = [
-      {
-        condition: amount % 5 !== 0,
-        message: "You can only withdraw amounts in multiples of $5.",
-      },
       {
         condition:
           amount > WITHDRAWAL_TRANSACTION_LIMIT ||
@@ -68,6 +72,8 @@ router.put(
         return response.status(400).send({ error: validation.message });
       }
     }
+
+    sessionWithdrawals[accountID] = potentialTotal; 
 
     try {
       const updatedAccount = await withdrawal(
@@ -110,5 +116,28 @@ router.put(
     }
   }
 );
+
+// router.put(
+//   "/:accountID/signout",
+//   async (request: Request, response: Response) => {
+//     const { error } = transactionSchema.validate(request.body);
+
+//     if (error) {
+//       return response.status(400).send(error.details[0].message);
+//     }
+
+//     try {
+//       const updatedAccount = await deposit(
+//         request.params.accountID,
+//         request.body.amount
+//       );
+//       return response.status(200).send(updatedAccount);
+//     } catch (err) {
+//       if (err instanceof Error) {
+//         return response.status(400).send({ error: err.message });
+//       }
+//     }
+//   }
+// );
 
 export default router;
