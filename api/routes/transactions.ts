@@ -162,7 +162,10 @@ router.post("/:accountID/signout", (request: Request, response: Response) => {
       .send({ error: "Missing accountID in request body." });
   }
 
-  //Overly Simple solution to wipe session activity
+  //Overly Simple solution to wipe session activity below is the original solution
+  // if (accountID && sessionWithdrawals[accountID]) {
+  //   delete sessionWithdrawals[accountID];
+  // }
   sessionWithdrawals = {};
   sessionDeposits = {};
 
